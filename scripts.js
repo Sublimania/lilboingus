@@ -1,43 +1,38 @@
 const scoreDisplay = document.getElementById('score');
 const Button = document.getElementById('boingus');
 const prompt = document.getElementById('prompt');
-const favicon = document.getElementById('favicon'); // Make sure you have a favicon element
+const favicon = document.getElementById('favicon');
 const smile = 'smiley.png';
 const frown = 'frowny.png';
-const updateInterval = 140; // Time in milliseconds between score updates
 
 let timeoutId;
 let score = 0;
 let isRubbing = false;
-let lastUpdateTime = 0; // Track the last time the score was updated
+let lastUpdateTime = 0;
+let lastMousePosition = { x: 0, y: 0 };
 
-function startRubbing() {
-    isRubbing = true; // Set rubbing to true
-    addPoint(); // Call addPoint once when starting to rub
+function startRubbing(event) {
+    isRubbing = true; 
+    lastUpdateTime = Date.now();
+    lastMousePosition.x = event.clientX;
+    lastMousePosition.y = event.clientY;
 }
 
 function stopRubbing() {
-    isRubbing = false; // Set rubbing to false
+    isRubbing = false; 
 }
 
 function rubButton(event) {
     if (isRubbing) {
         const currentTime = Date.now();
-        // Check if enough time has passed since the last update
-        if (currentTime - lastUpdateTime >= updateInterval) {
-            // Check if the mouse is over the button
-            const rect = Button.getBoundingClientRect();
-            const isOverButton = (
-                event.clientX >= rect.left &&
-                event.clientX <= rect.right &&
-                event.clientY >= rect.top &&
-                event.clientY <= rect.bottom
-            );
+        const dx = event.clientX - lastMousePosition.x;
+        const dy = event.clientY - lastMousePosition.y;
+        const distance = Math.sqrt(dx * dx + dy * dy);
 
-            if (isOverButton) {
-                addPoint(); // Call addPoint if the mouse is over the button
-                lastUpdateTime = currentTime; // Update the last update time
-            }
+        if (distance > 65) {
+            addPoint();
+            lastMousePosition.x = event.clientX;
+            lastMousePosition.y = event.clientY;
         }
     }
 }
@@ -67,7 +62,6 @@ function addPoint() {
 function endGame() {
     clearTimeout(timeoutId);
     prompt.textContent = "Congratulations! You've won the game by making the Lil' BoinGus SMILE 666 times! The Lil' BoinGus is satisfied and no longer wishes to be tickled.";
-    Button.removeEventListener('click', addPoint);
     Button.style.pointerEvents = 'none';
     score = 666;
     scoreDisplay.textContent = '666 SMILES';
@@ -76,11 +70,9 @@ function endGame() {
     Button.src = smile;
     favicon.href = smile;
 
-    Button.classList.add('celebrate'); // You can define this class in CSS for animations
+    Button.classList.add('celebrate');
 }
 
-// Button event listeners
-Button.addEventListener('click', addPoint);
-Button.addEventListener('mousedown', startRubbing); // Start rubbing on mouse down
-Button.addEventListener('mouseup', stopRubbing); // Stop rubbing on mouse up
-Button.addEventListener('mousemove', rubButton); // Check for rubbing while moving the mouse
+Button.addEventListener('mousedown', startRubbing);
+Button.addEventListener('mouseup', stopRubbing);
+Button.addEventListener('mousemove', rubButton);
